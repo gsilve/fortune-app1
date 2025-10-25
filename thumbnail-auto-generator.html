@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎨 12띠 썸네일 자동 생성기</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .controls {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .btn-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .preview-card {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .preview-card canvas {
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .download-btn {
+            width: 100%;
+            padding: 10px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .download-btn:hover {
+            background: #218838;
+        }
+        
+        .progress {
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 30px;
+            margin: 20px 0;
+            overflow: hidden;
+            display: none;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 12띠 썸네일 자동 생성기</h1>
+            <p>클릭 한 번에 12개 썸네일 완성!</p>
+        </div>
+        
+        <div class="controls">
+            <h2 style="margin-bottom: 20px;">⚙️ 설정</h2>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 10px; font-weight: 600;">
+                    📅 날짜:
+                </label>
+                <input 
+                    type="text" 
+                    id="dateInput" 
+                    value=""
+                    style="padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; width: 300px;"
+                    placeholder="예: 10월 25일"
+                />
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="generateAll()">
+                    ⚡ 전체 생성 (12개)
+                </button>
+                <button class="btn btn-success" onclick="downloadAllZip()">
+                    📦 ZIP 다운로드
+                </button>
+            </div>
+            
+            <div class="progress" id="progress">
+                <div class="progress-bar" id="progressBar">0%</div>
+            </div>
+        </div>
+        
+        <div id="preview" class="preview-grid"></div>
+    </div>
+
+    <script>
+        const zodiacConfig = {
+            "쥐띠": {
+                emoji: "🐭",
+                startColor: [102, 126, 234],
+                endColor: [118, 75, 162],
+                message: "정보가 곧 돈이 되는 날"
+            },
+            "소띠": {
+                emoji: "🐮",
+                startColor: [139, 111, 71],
+                endColor: [212, 165, 116],
+                message: "꾸준함이 재산이 되는 날"
+            },
+            "호랑이띠": {
+                emoji: "🐯",
+                startColor: [255, 107, 53],
+                endColor: [247, 147, 30],
+                message: "도전이 기회를 만드는 날"
+            },
+            "토끼띠": {
+                emoji: "🐰",
+                startColor: [255, 107, 157],
+                endColor: [255, 194, 212],
+                message: "관계가 재물이 되는 날"
+            },
+            "용띠": {
+                emoji: "🐲",
+                startColor: [255, 215, 0],
+                endColor: [255, 165, 0],
+                message: "비전이 현실이 되는 날"
+            },
+            "뱀띠": {
+                emoji: "🐍",
+                startColor: [46, 204, 113],
+                endColor: [39, 174, 96],
+                message: "통찰이 수익이 되는 날"
+            },
+            "말띠": {
+                emoji: "🐴",
+                startColor: [231, 76, 60],
+                endColor: [192, 57, 43],
+                message: "행동이 돈이 되는 날"
+            },
+            "양띠": {
+                emoji: "🐑",
+                startColor: [245, 245, 220],
+                endColor: [222, 184, 135],
+                message: "배려가 이익이 되는 날"
+            },
+            "원숭이띠": {
+                emoji: "🐵",
+                startColor: [241, 196, 15],
+                endColor: [243, 156, 18],
+                message: "아이디어가 수익이 되는 날"
+            },
+            "닭띠": {
+                emoji: "🐓",
+                startColor: [230, 126, 34],
+                endColor: [211, 84, 0],
+                message: "계획이 돈이 되는 날"
+            },
+            "개띠": {
+                emoji: "🐕",
+                startColor: [135, 206, 235],
+                endColor: [70, 130, 180],
+                message: "신뢰가 자산이 되는 날"
+            },
+            "돼지띠": {
+                emoji: "🐷",
+                startColor: [255, 182, 193],
+                endColor: [255, 105, 180],
+                message: "풍요가 찾아오는 날"
+            }
+        };
+
+        let generatedCanvases = [];
+
+        // 초기 날짜 설정
+        document.getElementById('dateInput').value = 
+            new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
+
+        function createThumbnail(zodiac, date) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1080;
+            canvas.height = 1920;
+            const ctx = canvas.getContext('2d');
+            
+            const config = zodiacConfig[zodiac];
+            
+            // 그라데이션 배경
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, `rgb(${config.startColor.join(',')})`);
+            gradient.addColorStop(1, `rgb(${config.endColor.join(',')})`);
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 텍스트 설정
+            ctx.fillStyle = 'white';
+            ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+            ctx.lineWidth = 8;
+            ctx.textAlign = 'center';
+            ctx.shadowColor = 'rgba(0,0,0,0.5)';
+            ctx.shadowBlur = 20;
+            
+            // 이모지
+            ctx.font = '300px Arial';
+            ctx.strokeText(config.emoji, 540, 500);
+            ctx.fillText(config.emoji, 540, 500);
+            
+            // 띠 이름
+            ctx.font = 'bold 120px "Noto Sans KR", Arial';
+            ctx.strokeText(zodiac, 540, 860);
+            ctx.fillText(zodiac, 540, 860);
+            
+            // 날짜
+            ctx.font = '70px "Noto Sans KR", Arial';
+            ctx.strokeText(date, 540, 1010);
+            ctx.fillText(date, 540, 1010);
+            
+            ctx.strokeText('돈운세', 540, 1110);
+            ctx.fillText('돈운세', 540, 1110);
+            
+            // 메시지
+            ctx.font = '50px "Noto Sans KR", Arial';
+            ctx.strokeText(`"${config.message}"`, 540, 1450);
+            ctx.fillText(`"${config.message}"`, 540, 1450);
+            
+            // 브랜딩
+            ctx.font = '40px "Noto Sans KR", Arial';
+            ctx.strokeText('매일 업데이트', 540, 1750);
+            ctx.fillText('매일 업데이트', 540, 1750);
+            
+            return canvas;
+        }
+
+        function generateAll() {
+            const date = document.getElementById('dateInput').value;
+            const preview = document.getElementById('preview');
+            const progress = document.getElementById('progress');
+            const progressBar = document.getElementById('progressBar');
+            
+            preview.innerHTML = '';
+            generatedCanvases = [];
+            progress.style.display = 'block';
+            
+            const zodiacs = Object.keys(zodiacConfig);
+            let completed = 0;
+            
+            zodiacs.forEach((zodiac, index) => {
+                setTimeout(() => {
+                    const canvas = createThumbnail(zodiac, date);
+                    generatedCanvases.push({ zodiac, canvas });
+                    
+                    // 미리보기 카드 생성
+                    const card = document.createElement('div');
+                    card.className = 'preview-card';
+                    
+                    const previewCanvas = document.createElement('canvas');
+                    previewCanvas.width = 250;
+                    previewCanvas.height = 444;
+                    const previewCtx = previewCanvas.getContext('2d');
+                    previewCtx.drawImage(canvas, 0, 0, 250, 444);
+                    
+                    const downloadBtn = document.createElement('button');
+                    downloadBtn.className = 'download-btn';
+                    downloadBtn.textContent = `📥 ${zodiac} 다운로드`;
+                    downloadBtn.onclick = () => downloadCanvas(canvas, `${zodiac}_${date}.png`);
+                    
+                    card.appendChild(previewCanvas);
+                    card.appendChild(downloadBtn);
+                    preview.appendChild(card);
+                    
+                    // 진행률 업데이트
+                    completed++;
+                    const percent = Math.round((completed / zodiacs.length) * 100);
+                    progressBar.style.width = percent + '%';
+                    progressBar.textContent = percent + '%';
+                    
+                    if (completed === zodiacs.length) {
+                        setTimeout(() => {
+                            progress.style.display = 'none';
+                        }, 1000);
+                    }
+                }, index * 200);
+            });
+        }
+
+        function downloadCanvas(canvas, filename) {
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png', 1.0);
+            link.click();
+        }
+
+        function downloadAllZip() {
+            if (generatedCanvases.length === 0) {
+                alert('먼저 "전체 생성" 버튼을 클릭하세요!');
+                return;
+            }
+            
+            alert('개별 다운로드를 진행합니다. (브라우저 제약으로 ZIP은 지원하지 않음)');
+            
+            const date = document.getElementById('dateInput').value;
+            generatedCanvases.forEach(({ zodiac, canvas }) => {
+                setTimeout(() => {
+                    downloadCanvas(canvas, `${zodiac}_${date}.png`);
+                }, 100);
+            });
+        }
+
+        // 자동 생성 (페이지 로드 시)
+        window.onload = () => {
+            console.log('🎨 썸네일 생성기 준비 완료');
+        };
+    </script>
+</body>
+</html>

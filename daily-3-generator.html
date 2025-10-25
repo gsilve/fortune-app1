@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📅 오늘의 3띠 운세 생성기</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .alert {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            color: #856404;
+        }
+        
+        .alert strong {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .day-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 3px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .day-card:hover {
+            transform: translateY(-5px);
+            border-color: #84fab0;
+        }
+        
+        .day-card.active {
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            color: white;
+            border-color: #84fab0;
+        }
+        
+        .day-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+        
+        .zodiac-list {
+            font-size: 0.9rem;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-top: 20px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .result-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 15px 0;
+            border-left: 5px solid #84fab0;
+        }
+        
+        .script-box {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        
+        .copy-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        const weekSchedule = {
+            "월요일": ["쥐띠", "소띠", "호랑이띠"],
+            "화요일": ["토끼띠", "용띠", "뱀띠"],
+            "수요일": ["말띠", "양띠", "원숭이띠"],
+            "목요일": ["닭띠", "개띠", "돼지띠"],
+            "금요일": ["용띠", "토끼띠", "뱀띠"], // 인기 띠 재업로드
+            "토요일": ["쥐띠", "소띠", "호랑이띠"], // 순환
+            "일요일": ["롱폼 제작의 날"] // 주간 운세
+        };
+
+        const zodiacData = {
+            "쥐띠": { emoji: "🐭", message: "정보가 곧 돈이 되는 날" },
+            "소띠": { emoji: "🐮", message: "꾸준함이 재산이 되는 날" },
+            "호랑이띠": { emoji: "🐯", message: "도전이 기회를 만드는 날" },
+            "토끼띠": { emoji: "🐰", message: "관계가 재물이 되는 날" },
+            "용띠": { emoji: "🐲", message: "비전이 현실이 되는 날" },
+            "뱀띠": { emoji: "🐍", message: "통찰이 수익이 되는 날" },
+            "말띠": { emoji: "🐴", message: "행동이 돈이 되는 날" },
+            "양띠": { emoji: "🐑", message: "배려가 이익이 되는 날" },
+            "원숭이띠": { emoji: "🐵", message: "아이디어가 수익이 되는 날" },
+            "닭띠": { emoji: "🐓", message: "계획이 돈이 되는 날" },
+            "개띠": { emoji: "🐕", message: "신뢰가 자산이 되는 날" },
+            "돼지띠": { emoji: "🐷", message: "풍요가 찾아오는 날" }
+        };
+
+        function App() {
+            const [selectedDay, setSelectedDay] = useState(null);
+            const [results, setResults] = useState(null);
+
+            const today = new Date().toLocaleDateString('ko-KR', { weekday: 'long' });
+
+            const generateForDay = (day) => {
+                const zodiacs = weekSchedule[day];
+                if (day === "일요일") {
+                    alert("일요일은 롱폼 제작의 날입니다!\n주간 운세 롱폼(8-10분)을 만들어보세요.");
+                    return;
+                }
+
+                const results = zodiacs.map(zodiac => {
+                    const data = zodiacData[zodiac];
+                    const script = `[0-3초 오프닝]
+${zodiac} 여러분, 오늘은 ${data.message}입니다
+
+[4-20초 핵심 메시지]
+작은 기회를 놓치지 마세요. 오늘의 선택이 내일의 통장을 만듭니다.
+
+[21-30초 마무리]
+${zodiac}답게, 오늘도 풍요로운 하루 보내세요!`;
+
+                    return {
+                        zodiac,
+                        emoji: data.emoji,
+                        script,
+                        title: `${data.emoji} ${zodiac} ${new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })} 돈운세`
+                    };
+                });
+
+                setResults(results);
+            };
+
+            return (
+                <div className="container">
+                    <div className="header">
+                        <h1>📅 오늘의 3띠 생성기</h1>
+                        <p>안전한 업로드 전략 (하루 3개)</p>
+                    </div>
+
+                    <div className="alert">
+                        <strong>💡 안전 업로드 가이드</strong>
+                        하루 12개 ❌ → 하루 3개 ✅<br/>
+                        알고리즘 스팸 방지 + 품질 유지<br/>
+                        <strong>오늘은 {today}입니다!</strong>
+                    </div>
+
+                    <div className="card">
+                        <h2 style={{marginBottom: '20px'}}>📅 주간 스케줄</h2>
+                        <div className="schedule-grid">
+                            {Object.entries(weekSchedule).map(([day, zodiacs]) => (
+                                <div 
+                                    key={day}
+                                    className={`day-card ${selectedDay === day ? 'active' : ''} ${today === day ? 'today' : ''}`}
+                                    onClick={() => {
+                                        setSelectedDay(day);
+                                        generateForDay(day);
+                                    }}
+                                >
+                                    <div className="day-name">
+                                        {day}
+                                        {today === day && " ⭐"}
+                                    </div>
+                                    <div className="zodiac-list">
+                                        {zodiacs.join(' · ')}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {results && (
+                        <div className="card">
+                            <h2>🎬 오늘의 3개 쇼츠 대본</h2>
+                            
+                            {results.map((result, i) => (
+                                <div key={i} className="result-card">
+                                    <h3>{result.emoji} {result.zodiac}</h3>
+                                    <p><strong>제목:</strong> {result.title}</p>
+                                    <div className="script-box">{result.script}</div>
+                                    <button 
+                                        className="copy-btn"
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(result.script);
+                                            alert(`${result.zodiac} 대본 복사 완료!`);
+                                        }}
+                                    >
+                                        📋 복사
+                                    </button>
+                                    <div style={{marginTop: '10px', fontSize: '14px', color: '#666'}}>
+                                        <strong>업로드 시간:</strong> {['07:00', '12:00', '18:00'][i]}
+                                    </div>
+                                </div>
+                            ))}
+
+                            <div style={{background: '#e7f3ff', padding: '20px', borderRadius: '10px', marginTop: '20px'}}>
+                                <strong>💡 오늘의 업로드 플랜:</strong><br/>
+                                07:00 → {results[0].zodiac}<br/>
+                                12:00 → {results[1].zodiac}<br/>
+                                18:00 → {results[2].zodiac}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>

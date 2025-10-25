@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎬 영상 제목 자동 생성기</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+        
+        .date-input {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        input[type="date"] {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin: 10px 0;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .template-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 4px solid #667eea;
+        }
+        
+        .template-title {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .template-text {
+            font-size: 18px;
+            margin: 10px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        
+        .alert {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 12px;
+            background: #e0e0e0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .weekly-grid {
+            display: grid;
+            gap: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎬 영상 제목 생성기</h1>
+            <p>날짜만 선택하면 자동 완성!</p>
+        </div>
+
+        <div class="card">
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('basic')">기본 템플릿</button>
+                <button class="tab" onclick="showTab('weekly')">요일별 템플릿</button>
+                <button class="tab" onclick="showTab('special')">특별한 날</button>
+            </div>
+
+            <div class="date-input">
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">📅 날짜 선택</label>
+                    <input type="date" id="dateInput" onchange="generateTitles()">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">📆 오늘 날짜</label>
+                    <input type="date" id="todayInput" readonly>
+                </div>
+            </div>
+
+            <button class="btn" onclick="setToday()">⚡ 오늘 날짜로 생성</button>
+            <button class="btn" onclick="setTomorrow()">🌅 내일 날짜로 생성</button>
+        </div>
+
+        <!-- 기본 템플릿 -->
+        <div id="basicTab" class="card">
+            <h2 style="margin-bottom: 20px;">📌 기본 템플릿 (매일 사용)</h2>
+            
+            <div class="template-card">
+                <div class="template-title">메인 추천 ⭐⭐⭐</div>
+                <div class="template-text" id="basicTitle1"></div>
+                <button class="btn btn-success" onclick="copy('basicTitle1')">📋 복사</button>
+            </div>
+
+            <div class="template-card">
+                <div class="template-title">변형 1</div>
+                <div class="template-text" id="basicTitle2"></div>
+                <button class="btn btn-success" onclick="copy('basicTitle2')">📋 복사</button>
+            </div>
+
+            <div class="template-card">
+                <div class="template-title">변형 2</div>
+                <div class="template-text" id="basicTitle3"></div>
+                <button class="btn btn-success" onclick="copy('basicTitle3')">📋 복사</button>
+            </div>
+        </div>
+
+        <!-- 요일별 템플릿 -->
+        <div id="weeklyTab" class="card" style="display: none;">
+            <h2 style="margin-bottom: 20px;">📅 요일별 템플릿</h2>
+            <div id="weeklyContent" class="weekly-grid"></div>
+        </div>
+
+        <!-- 특별한 날 템플릿 -->
+        <div id="specialTab" class="card" style="display: none;">
+            <h2 style="margin-bottom: 20px;">🎉 특별한 날 템플릿</h2>
+            
+            <div class="template-card">
+                <div class="template-title">월초 (1~3일)</div>
+                <div class="template-text" id="specialTitle1"></div>
+                <button class="btn btn-success" onclick="copy('specialTitle1')">📋 복사</button>
+            </div>
+
+            <div class="template-card">
+                <div class="template-title">월말 (28~31일)</div>
+                <div class="template-text" id="specialTitle2"></div>
+                <button class="btn btn-success" onclick="copy('specialTitle2')">📋 복사</button>
+            </div>
+
+            <div class="template-card">
+                <div class="template-title">급여일 (25일)</div>
+                <div class="template-text" id="specialTitle3"></div>
+                <button class="btn btn-success" onclick="copy('specialTitle3')">📋 복사</button>
+            </div>
+        </div>
+
+        <div class="alert" id="alert">✅ 복사되었습니다!</div>
+    </div>
+
+    <script>
+        // 초기 설정
+        const today = new Date();
+        document.getElementById('todayInput').valueAsDate = today;
+        document.getElementById('dateInput').valueAsDate = today;
+        generateTitles();
+
+        const weeklyTemplates = {
+            0: "새로운 한 주", // 일요일
+            1: "한 주의 시작", // 월요일
+            2: "재물운 상승", // 화요일
+            3: "중반 운세", // 수요일
+            4: "돈 들어오는 날", // 목요일
+            5: "주말 전 운세", // 금요일
+            6: "주말 특집" // 토요일
+        };
+
+        function showTab(tabName) {
+            // 탭 버튼 활성화
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // 탭 콘텐츠 표시
+            document.getElementById('basicTab').style.display = 'none';
+            document.getElementById('weeklyTab').style.display = 'none';
+            document.getElementById('specialTab').style.display = 'none';
+
+            if (tabName === 'basic') {
+                document.getElementById('basicTab').style.display = 'block';
+            } else if (tabName === 'weekly') {
+                document.getElementById('weeklyTab').style.display = 'block';
+            } else if (tabName === 'special') {
+                document.getElementById('specialTab').style.display = 'block';
+            }
+        }
+
+        function setToday() {
+            document.getElementById('dateInput').valueAsDate = new Date();
+            generateTitles();
+        }
+
+        function setTomorrow() {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('dateInput').valueAsDate = tomorrow;
+            generateTitles();
+        }
+
+        function generateTitles() {
+            const date = new Date(document.getElementById('dateInput').value);
+            const month = date.getMonth() + 1;
+            const day = date.getDate();
+            const dayOfWeek = date.getDay();
+            const dateStr = `${month}.${day < 10 ? '0' + day : day}`;
+
+            // 기본 템플릿
+            document.getElementById('basicTitle1').textContent = 
+                `${dateStr} 12띠 금전운 💰 오늘의 재물운`;
+            document.getElementById('basicTitle2').textContent = 
+                `${dateStr} 12띠 재물운 💎 60초 총정리`;
+            document.getElementById('basicTitle3').textContent = 
+                `오늘의 12띠 돈운세 💸 ${dateStr}`;
+
+            // 요일별 템플릿
+            const weeklyContent = document.getElementById('weeklyContent');
+            weeklyContent.innerHTML = '';
+            
+            const weeklyTitle = `${dateStr} 12띠 금전운 💰 ${weeklyTemplates[dayOfWeek]}`;
+            weeklyContent.innerHTML = `
+                <div class="template-card">
+                    <div class="template-title">${['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'][dayOfWeek]} 템플릿</div>
+                    <div class="template-text" id="weeklyTitle">${weeklyTitle}</div>
+                    <button class="btn btn-success" onclick="copy('weeklyTitle')">📋 복사</button>
+                </div>
+            `;
+
+            // 특별한 날 템플릿
+            document.getElementById('specialTitle1').textContent = 
+                `${dateStr} 12띠 금전운 💰 새로운 시작`;
+            document.getElementById('specialTitle2').textContent = 
+                `${dateStr} 12띠 금전운 💰 마무리 운세`;
+            document.getElementById('specialTitle3').textContent = 
+                `${dateStr} 12띠 금전운 💰 급여일 특집`;
+        }
+
+        function copy(elementId) {
+            const text = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const alert = document.getElementById('alert');
+                alert.style.display = 'block';
+                setTimeout(() => {
+                    alert.style.display = 'none';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

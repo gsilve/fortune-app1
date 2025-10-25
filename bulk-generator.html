@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💰 12띠 전체 한방 생성기</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+        
+        .big-btn {
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 24px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-bottom: 10px;
+        }
+        
+        .big-btn:hover {
+            transform: translateY(-3px);
+        }
+        
+        .zodiac-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .zodiac-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .zodiac-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .script-preview {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+        
+        .copy-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 5px;
+        }
+        
+        .copy-btn:hover {
+            background: #218838;
+        }
+        
+        .download-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        
+        .export-all {
+            background: #ffc107;
+            color: #000;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        const zodiacData = {
+            "쥐띠": {
+                emoji: "🐭",
+                opening: ["쥐띠 여러분, 오늘은 정보가 곧 돈이 되는 날입니다", "빠른 판단이 수익을 만드는 타이밍"],
+                body: ["트렌드 변화에 민감하게 반응하면 수익이 보입니다", "소액이라도 지금 시작하는 것이 3개월 뒤 차이를 만듭니다"],
+                ending: ["쥐띠의 직감을 믿으세요. 다음 주에 좋은 소식 올 거예요"]
+            },
+            "소띠": {
+                emoji: "🐮",
+                opening: ["소띠 여러분, 오늘은 쌓는 날입니다", "꾸준함이 가장 큰 재산이 되는 타이밍"],
+                body: ["예적금, 연금 등 장기 자산 점검 타이밍입니다", "매일 만 원이라도 저축하는 습관이 곧 부입니다"],
+                ending: ["소띠의 꾸준함은 절대 배신하지 않습니다"]
+            },
+            "호랑이띠": {
+                emoji: "🐯",
+                opening: ["호랑이띠 여러분, 오늘은 도전하는 날입니다", "크게 생각하고 과감하게 움직이세요"],
+                body: ["새로운 사업, 프로젝트 시작하기 좋은 에너지", "브랜드, SNS 등 나를 드러내는 것에 투자하세요"],
+                ending: ["호랑이띠의 용기가 곧 자산입니다"]
+            },
+            "토끼띠": {
+                emoji: "🐰",
+                opening: ["토끼띠 여러분, 오늘은 사람이 곧 재물입니다", "관계 속에서 기회를 찾으세요"],
+                body: ["네트워킹, 모임 참여가 수익으로 연결됩니다", "부드러운 태도가 단단한 계약을 만듭니다"],
+                ending: ["토끼띠의 관계망이 곧 자산입니다"]
+            },
+            "용띠": {
+                emoji: "🐲",
+                opening: ["용띠 여러분, 오늘은 크게 그리는 날입니다", "비전이 곧 재물이 되는 타이밍"],
+                body: ["장기 투자, 큰 프로젝트에 집중하세요", "영향력 있는 사람과의 연결이 기회를 부릅니다"],
+                ending: ["용띠의 비전은 반드시 현실이 됩니다"]
+            },
+            "뱀띠": {
+                emoji: "🐍",
+                opening: ["뱀띠 여러분, 오늘은 보이지 않는 것이 보이는 날", "통찰력이 곧 수익입니다"],
+                body: ["데이터 분석, 시장 리서치에 시간 투자하세요", "전문성을 깊게 파는 것이 고단가로 이어집니다"],
+                ending: ["뱀띠의 통찰은 틀린 적이 없습니다"]
+            },
+            "말띠": {
+                emoji: "🐴",
+                opening: ["말띠 여러분, 오늘은 달리는 날입니다", "행동이 곧 수익으로 바뀌는 타이밍"],
+                body: ["미루던 일을 시작하세요. 돈은 움직임 속에 있습니다", "에너지를 아끼지 말고 쏟아부으세요"],
+                ending: ["말띠의 열정은 절대 헛되지 않습니다"]
+            },
+            "양띠": {
+                emoji: "🐑",
+                opening: ["양띠 여러분, 오늘은 함께 나누는 날입니다", "배려가 곧 이익으로 돌아오는 타이밍"],
+                body: ["협력 사업, 공동 투자가 유리한 시기입니다", "사람을 먼저 챙기면 돈은 따라옵니다"],
+                ending: ["양띠의 진심은 반드시 통합니다"]
+            },
+            "원숭이띠": {
+                emoji: "🐵",
+                opening: ["원숭이띠 여러분, 오늘은 아이디어가 돈이 되는 날", "창의력이 곧 수익입니다"],
+                body: ["새로운 시도, 실험이 수익으로 연결됩니다", "유연하게 전략을 바꾸면 기회를 잡습니다"],
+                ending: ["원숭이띠의 창의성은 무한합니다"]
+            },
+            "닭띠": {
+                emoji: "🐓",
+                opening: ["닭띠 여러분, 오늘은 계획이 돈이 되는 날", "정확함이 곧 프리미엄입니다"],
+                body: ["완성도 높은 작업이 고단가로 이어집니다", "정확한 계획이 리스크를 줄이고 수익을 높입니다"],
+                ending: ["닭띠의 정확함은 신뢰를 만듭니다"]
+            },
+            "개띠": {
+                emoji: "🐕",
+                opening: ["개띠 여러분, 오늘은 신뢰가 자산이 되는 날", "성실함이 곧 돈으로 돌아옵니다"],
+                body: ["장기 고객 관리에 집중하면 재구매가 일어납니다", "성실함으로 쌓은 평판이 곧 돈입니다"],
+                ending: ["개띠의 성실함은 배신하지 않습니다"]
+            },
+            "돼지띠": {
+                emoji: "🐷",
+                opening: ["돼지띠 여러분, 오늘은 채워지는 날입니다", "여유가 곧 재물을 부릅니다"],
+                body: ["저축, 자산 축적에 집중하기 좋은 시기", "나눔, 기부가 순환을 만들고 돈을 부릅니다"],
+                ending: ["돼지띠의 풍요는 끝이 없습니다"]
+            }
+        };
+
+        function App() {
+            const [results, setResults] = useState(null);
+            const [generatedDate, setGeneratedDate] = useState('');
+
+            const generateAll = () => {
+                const now = new Date();
+                const dateStr = `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일`;
+                setGeneratedDate(dateStr);
+
+                const allResults = {};
+                
+                Object.entries(zodiacData).forEach(([zodiac, data]) => {
+                    const opening = data.opening[Math.floor(Math.random() * data.opening.length)];
+                    const body = data.body[Math.floor(Math.random() * data.body.length)];
+                    const ending = data.ending[Math.floor(Math.random() * data.ending.length)];
+                    
+                    const script = `[0-3초 오프닝]
+${opening}
+
+[4-20초 핵심 메시지]
+${body}
+
+[21-30초 마무리]
+${ending}`;
+
+                    allResults[zodiac] = {
+                        emoji: data.emoji,
+                        script,
+                        title: `${data.emoji} ${zodiac} ${dateStr} 돈운세`,
+                        hashtags: `#${zodiac} #${zodiac}운세 #돈운세 #재물운 #오늘의운세`
+                    };
+                });
+
+                setResults(allResults);
+            };
+
+            const copyScript = (zodiac) => {
+                navigator.clipboard.writeText(results[zodiac].script);
+                alert(`${zodiac} 대본이 복사되었습니다!`);
+            };
+
+            const downloadAll = () => {
+                let allContent = `=== ${generatedDate} 12띠 돈운세 전체 대본 ===\n\n`;
+                
+                Object.entries(results).forEach(([zodiac, data]) => {
+                    allContent += `\n${'='.repeat(50)}\n`;
+                    allContent += `${data.title}\n`;
+                    allContent += `${'='.repeat(50)}\n\n`;
+                    allContent += `${data.script}\n\n`;
+                    allContent += `${data.hashtags}\n\n`;
+                });
+
+                const blob = new Blob([allContent], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `12띠_돈운세_${generatedDate}.txt`;
+                a.click();
+            };
+
+            return (
+                <div className="container">
+                    <div className="header">
+                        <h1>⚡ 12띠 한방 생성기</h1>
+                        <p>클릭 한 번에 오늘의 12개 쇼츠 완성</p>
+                    </div>
+
+                    <div className="card">
+                        <button className="big-btn" onClick={generateAll}>
+                            🚀 오늘의 12띠 전체 생성하기
+                        </button>
+                        <p style={{textAlign: 'center', color: '#666', marginTop: '10px'}}>
+                            매일 12개 × 30일 = 월 360개 쇼츠 자동화
+                        </p>
+                    </div>
+
+                    {results && (
+                        <>
+                            <div className="card">
+                                <div className="stats">
+                                    <div className="stat-box">
+                                        <div className="stat-number">12</div>
+                                        <div className="stat-label">쇼츠 생성 완료</div>
+                                    </div>
+                                    <div className="stat-box">
+                                        <div className="stat-number">~6분</div>
+                                        <div className="stat-label">총 영상 길이</div>
+                                    </div>
+                                    <div className="stat-box">
+                                        <div className="stat-number">100%</div>
+                                        <div className="stat-label">한국 인구 커버</div>
+                                    </div>
+                                </div>
+
+                                <div className="export-all">
+                                    <button 
+                                        className="download-btn" 
+                                        onClick={downloadAll}
+                                        style={{padding: '12px 30px', fontSize: '16px'}}
+                                    >
+                                        📥 전체 대본 TXT 다운로드
+                                    </button>
+                                </div>
+                            </div>
+
+                            {Object.entries(results).map(([zodiac, data]) => (
+                                <div key={zodiac} className="card zodiac-card">
+                                    <div className="zodiac-header">
+                                        <div className="zodiac-title">
+                                            {data.emoji} {zodiac}
+                                        </div>
+                                        <div>
+                                            <button className="copy-btn" onClick={() => copyScript(zodiac)}>
+                                                📋 복사
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <strong>제목:</strong> {data.title}
+                                    </div>
+                                    
+                                    <div className="script-preview">
+                                        {data.script}
+                                    </div>
+                                    
+                                    <div style={{fontSize: '14px', color: '#666'}}>
+                                        <strong>해시태그:</strong> {data.hashtags}
+                                    </div>
+                                </div>
+                            ))}
+                        </>
+                    )}
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>

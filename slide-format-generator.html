@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 12띠 통합 슬라이드 생성기</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .alert {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            color: #856404;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin: 10px 0;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .script-box {
+            background: #000;
+            color: #0f0;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            font-size: 14px;
+            line-height: 1.6;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .timeline {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .timeline-item {
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #667eea;
+            background: white;
+            border-radius: 5px;
+        }
+        
+        .time {
+            font-weight: bold;
+            color: #667eea;
+            margin-right: 10px;
+        }
+        
+        .format-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 12px;
+            background: #e0e0e0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 12띠 통합 슬라이드 생성기</h1>
+            <p>60초 안에 12띠 전체를 담은 하나의 쇼츠!</p>
+        </div>
+
+        <div class="alert">
+            <strong>💡 올바른 컨셉!</strong><br>
+            • 1개 영상 = 12띠 전부 포함 (슬라이드 형식)<br>
+            • 각 띠당 5초 = 총 60초<br>
+            • 새벽 1회 업로드 (05-07시 사이)<br>
+            • 제목: "10월 25일 12띠 금전운 💰 오늘의 재물운"
+        </div>
+
+        <div class="card">
+            <h2 style="margin-bottom: 20px;">⚙️ 포맷 선택</h2>
+            <div class="format-tabs">
+                <button class="tab active" onclick="selectFormat('vrew')">VREW 용</button>
+                <button class="tab" onclick="selectFormat('premiere')">Premiere 용</button>
+                <button class="tab" onclick="selectFormat('capcut')">CapCut 용</button>
+            </div>
+
+            <button class="btn" onclick="generateScript()">
+                ⚡ 오늘의 12띠 통합 대본 생성
+            </button>
+        </div>
+
+        <div id="result" style="display: none;" class="card">
+            <h2>🎬 생성된 대본</h2>
+            
+            <div class="timeline">
+                <h3>⏱️ 타임라인 구성 (60초)</h3>
+                <div id="timeline"></div>
+            </div>
+
+            <h3 style="margin: 20px 0;">📝 대본 (복사하기)</h3>
+            <div class="script-box" id="scriptBox"></div>
+            
+            <button class="btn" style="background: #28a745;" onclick="copyScript()">
+                📋 대본 복사
+            </button>
+            
+            <button class="btn" style="background: #17a2b8;" onclick="downloadTXT()">
+                💾 TXT 다운로드
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let currentFormat = 'vrew';
+        let generatedScript = '';
+
+        const zodiacConfig = {
+            "쥐띠": { emoji: "🐭", message: "정보가 곧 돈이 되는 날" },
+            "소띠": { emoji: "🐮", message: "꾸준함이 재산이 되는 날" },
+            "호랑이띠": { emoji: "🐯", message: "도전이 기회를 만드는 날" },
+            "토끼띠": { emoji: "🐰", message: "관계가 재물이 되는 날" },
+            "용띠": { emoji: "🐲", message: "비전이 현실이 되는 날" },
+            "뱀띠": { emoji: "🐍", message: "통찰이 수익이 되는 날" },
+            "말띠": { emoji: "🐴", message: "행동이 돈이 되는 날" },
+            "양띠": { emoji: "🐑", message: "배려가 이익이 되는 날" },
+            "원숭이띠": { emoji: "🐵", message: "아이디어가 수익이 되는 날" },
+            "닭띠": { emoji: "🐓", message: "계획이 돈이 되는 날" },
+            "개띠": { emoji: "🐕", message: "신뢰가 자산이 되는 날" },
+            "돼지띠": { emoji: "🐷", message: "풍요가 찾아오는 날" }
+        };
+
+        function selectFormat(format) {
+            currentFormat = format;
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function generateScript() {
+            const date = new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
+            let script = '';
+            let timeline = '';
+            let time = 0;
+
+            // 오프닝 (3초)
+            script += `[0-3초 오프닝]\n`;
+            script += `${date} 12띠 금전운입니다!\n`;
+            script += `오늘의 재물운을 확인하세요!\n\n`;
+            
+            timeline += `<div class="timeline-item">
+                <span class="time">0-3초</span>
+                오프닝: ${date} 12띠 금전운입니다!
+            </div>`;
+            time = 3;
+
+            // 각 띠 (5초씩)
+            Object.entries(zodiacConfig).forEach(([zodiac, data]) => {
+                const startTime = time;
+                const endTime = time + 5;
+                
+                script += `[${startTime}-${endTime}초 ${zodiac}]\n`;
+                script += `${data.emoji} ${zodiac}! ${data.message}\n`;
+                script += `작은 기회를 놓치지 마세요\n\n`;
+                
+                timeline += `<div class="timeline-item">
+                    <span class="time">${startTime}-${endTime}초</span>
+                    ${data.emoji} ${zodiac}: ${data.message}
+                </div>`;
+                
+                time += 5;
+            });
+
+            // 마무리 (2초)
+            script += `[${time}-60초 마무리]\n`;
+            script += `구독하고 매일 확인하세요!\n`;
+            script += `내일도 좋은 운이 함께하길!\n`;
+            
+            timeline += `<div class="timeline-item">
+                <span class="time">${time}-60초</span>
+                마무리: 구독 유도
+            </div>`;
+
+            generatedScript = script;
+            document.getElementById('scriptBox').textContent = script;
+            document.getElementById('timeline').innerHTML = timeline;
+            document.getElementById('result').style.display = 'block';
+        }
+
+        function copyScript() {
+            navigator.clipboard.writeText(generatedScript);
+            alert('✅ 대본이 복사되었습니다!');
+        }
+
+        function downloadTXT() {
+            const date = new Date().toISOString().split('T')[0];
+            const blob = new Blob([generatedScript], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `12띠_통합운세_${date}.txt`;
+            a.click();
+        }
+    </script>
+</body>
+</html>

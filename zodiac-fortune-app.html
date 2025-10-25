@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💰 띠별 돈 운세 쇼츠 생성기</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+        
+        .zodiac-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .zodiac-btn {
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border: 3px solid transparent;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .zodiac-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        .zodiac-btn.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .zodiac-emoji {
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 8px;
+        }
+        
+        .zodiac-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .zodiac-years {
+            font-size: 0.85rem;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .result-section {
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .zodiac-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .zodiac-info h2 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+        
+        .script-box {
+            background: #000;
+            color: #0f0;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            margin: 20px 0;
+            white-space: pre-wrap;
+            line-height: 1.8;
+        }
+        
+        .copy-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 5px;
+        }
+        
+        .copy-btn:hover {
+            background: #218838;
+        }
+        
+        .thumbnail-preview {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 24px;
+            font-weight: bold;
+            line-height: 1.4;
+        }
+        
+        .energy-tag {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin: 5px;
+        }
+        
+        .quick-select {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .quick-select input {
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            width: 150px;
+        }
+        
+        .stats-box {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .stats-box strong {
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // 띠별 템플릿 데이터
+        const zodiacData = {
+            "쥐띠": {
+                years: [1948, 1960, 1972, 1984, 1996, 2008, 2020],
+                emoji: "🐭",
+                element: "수",
+                energy: "기민함",
+                opening: ["쥐띠 여러분, 오늘은 정보가 곧 돈이 되는 날입니다", "빠른 판단이 수익을 만드는 타이밍"],
+                body: ["트렌드 변화에 민감하게 반응하면 수익이 보입니다", "소액이라도 지금 시작하는 것이 3개월 뒤 차이를 만듭니다", "정보 수집에 시간 투자하세요. 그게 곧 재물입니다"],
+                ending: ["쥐띠의 직감을 믿으세요. 다음 주에 좋은 소식 올 거예요", "빠르게 움직인 만큼 채워집니다"]
+            },
+            "소띠": {
+                years: [1949, 1961, 1973, 1985, 1997, 2009, 2021],
+                emoji: "🐮",
+                element: "토",
+                energy: "꾸준함",
+                opening: ["소띠 여러분, 오늘은 쌓는 날입니다", "꾸준함이 가장 큰 재산이 되는 타이밍"],
+                body: ["예적금, 연금 등 장기 자산 점검 타이밍입니다", "화려한 투자보다 안전한 적립이 유리합니다", "매일 만 원이라도 저축하는 습관이 곧 부입니다"],
+                ending: ["소띠의 꾸준함은 절대 배신하지 않습니다", "천천히 쌓인 것은 무너지지 않습니다"]
+            },
+            "호랑이띠": {
+                years: [1950, 1962, 1974, 1986, 1998, 2010, 2022],
+                emoji: "🐯",
+                element: "목",
+                energy: "도전",
+                opening: ["호랑이띠 여러분, 오늘은 도전하는 날입니다", "크게 생각하고 과감하게 움직이세요"],
+                body: ["새로운 사업, 프로젝트 시작하기 좋은 에너지", "주도적으로 움직이면 기회가 따라옵니다", "브랜드, SNS 등 나를 드러내는 것에 투자하세요"],
+                ending: ["호랑이띠의 용기가 곧 자산입니다", "오늘의 결단이 3개월 뒤 결과를 만듭니다"]
+            },
+            "토끼띠": {
+                years: [1951, 1963, 1975, 1987, 1999, 2011, 2023],
+                emoji: "🐰",
+                element: "목",
+                energy: "조화",
+                opening: ["토끼띠 여러분, 오늘은 사람이 곧 재물입니다", "관계 속에서 기회를 찾으세요"],
+                body: ["네트워킹, 모임 참여가 수익으로 연결됩니다", "협상력을 발휘하면 좋은 조건을 만들 수 있습니다", "부드러운 태도가 단단한 계약을 만듭니다"],
+                ending: ["토끼띠의 관계망이 곧 자산입니다", "다음 달에 그 인연이 돈이 될 거예요"]
+            },
+            "용띠": {
+                years: [1952, 1964, 1976, 1988, 2000, 2012, 2024],
+                emoji: "🐲",
+                element: "토",
+                energy: "비상",
+                opening: ["용띠 여러분, 오늘은 크게 그리는 날입니다", "비전이 곧 재물이 되는 타이밍"],
+                body: ["장기 투자, 큰 프로젝트에 집중하세요", "브랜드 가치, 명예가 곧 돈으로 전환되는 시기", "영향력 있는 사람과의 연결이 기회를 부릅니다"],
+                ending: ["용띠의 비전은 반드시 현실이 됩니다", "높이 나는 만큼 멀리 봅니다"]
+            },
+            "뱀띠": {
+                years: [1953, 1965, 1977, 1989, 2001, 2013, 2025],
+                emoji: "🐍",
+                element: "화",
+                energy: "통찰",
+                opening: ["뱀띠 여러분, 오늘은 보이지 않는 것이 보이는 날", "통찰력이 곧 수익입니다"],
+                body: ["데이터 분석, 시장 리서치에 시간 투자하세요", "남들이 못 보는 틈새 시장이 보입니다", "전문성을 깊게 파는 것이 고단가로 이어집니다"],
+                ending: ["뱀띠의 통찰은 틀린 적이 없습니다", "깊이 본 만큼 멀리 갑니다"]
+            },
+            "말띠": {
+                years: [1954, 1966, 1978, 1990, 2002, 2014],
+                emoji: "🐴",
+                element: "화",
+                energy: "열정",
+                opening: ["말띠 여러분, 오늘은 달리는 날입니다", "행동이 곧 수익으로 바뀌는 타이밍"],
+                body: ["미루던 일을 시작하세요. 돈은 움직임 속에 있습니다", "콘텐츠, SNS 등 드러내기가 수입으로 직결됩니다", "에너지를 아끼지 말고 쏟아부으세요"],
+                ending: ["말띠의 열정은 절대 헛되지 않습니다", "달린 만큼 채워집니다"]
+            },
+            "양띠": {
+                years: [1955, 1967, 1979, 1991, 2003, 2015],
+                emoji: "🐑",
+                element: "토",
+                energy: "온화함",
+                opening: ["양띠 여러분, 오늘은 함께 나누는 날입니다", "배려가 곧 이익으로 돌아오는 타이밍"],
+                body: ["협력 사업, 공동 투자가 유리한 시기입니다", "고객 응대, 서비스에 집중하면 재구매가 일어납니다", "사람을 먼저 챙기면 돈은 따라옵니다"],
+                ending: ["양띠의 진심은 반드시 통합니다", "나눈 만큼 채워집니다"]
+            },
+            "원숭이띠": {
+                years: [1956, 1968, 1980, 1992, 2004, 2016],
+                emoji: "🐵",
+                element: "금",
+                energy: "창의",
+                opening: ["원숭이띠 여러분, 오늘은 아이디어가 돈이 되는 날", "창의력이 곧 수익입니다"],
+                body: ["새로운 시도, 실험이 수익으로 연결됩니다", "다양한 수입원을 만드는 것이 유리합니다", "유연하게 전략을 바꾸면 기회를 잡습니다"],
+                ending: ["원숭이띠의 창의성은 무한합니다", "시도한 만큼 배우고, 배운 만큼 벌게 됩니다"]
+            },
+            "닭띠": {
+                years: [1957, 1969, 1981, 1993, 2005, 2017],
+                emoji: "🐓",
+                element: "금",
+                energy: "정확함",
+                opening: ["닭띠 여러분, 오늘은 계획이 돈이 되는 날", "정확함이 곧 프리미엄입니다"],
+                body: ["시간 관리, 일정 최적화가 수익을 만듭니다", "완성도 높은 작업이 고단가로 이어집니다", "정확한 계획이 리스크를 줄이고 수익을 높입니다"],
+                ending: ["닭띠의 정확함은 신뢰를 만듭니다", "정리한 만큼 채워집니다"]
+            },
+            "개띠": {
+                years: [1958, 1970, 1982, 1994, 2006, 2018],
+                emoji: "🐕",
+                element: "토",
+                energy: "성실함",
+                opening: ["개띠 여러분, 오늘은 신뢰가 자산이 되는 날", "성실함이 곧 돈으로 돌아옵니다"],
+                body: ["장기 고객 관리에 집중하면 재구매가 일어납니다", "신뢰 쌓기에 투자하세요. 그게 곧 자산입니다", "성실함으로 쌓은 평판이 곧 돈입니다"],
+                ending: ["개띠의 성실함은 배신하지 않습니다", "믿음을 준 만큼 채워집니다"]
+            },
+            "돼지띠": {
+                years: [1959, 1971, 1983, 1995, 2007, 2019],
+                emoji: "🐷",
+                element: "수",
+                energy: "풍요",
+                opening: ["돼지띠 여러분, 오늘은 채워지는 날입니다", "여유가 곧 재물을 부릅니다"],
+                body: ["욕심 부리지 말고 만족하면 더 많이 들어옵니다", "저축, 자산 축적에 집중하기 좋은 시기", "나눔, 기부가 순환을 만들고 돈을 부릅니다"],
+                ending: ["돼지띠의 풍요는 끝이 없습니다", "받아들인 만큼 채워집니다"]
+            }
+        };
+
+        function App() {
+            const [selectedZodiac, setSelectedZodiac] = useState(null);
+            const [birthYear, setBirthYear] = useState('');
+            const [result, setResult] = useState(null);
+
+            const findZodiacByYear = (year) => {
+                for (const [zodiac, data] of Object.entries(zodiacData)) {
+                    if (data.years.includes(parseInt(year))) {
+                        return zodiac;
+                    }
+                }
+                return null;
+            };
+
+            const handleYearInput = (e) => {
+                const year = e.target.value;
+                setBirthYear(year);
+                if (year.length === 4) {
+                    const zodiac = findZodiacByYear(year);
+                    if (zodiac) {
+                        setSelectedZodiac(zodiac);
+                    }
+                }
+            };
+
+            const generate = () => {
+                if (!selectedZodiac) {
+                    alert('띠를 선택해주세요!');
+                    return;
+                }
+
+                const data = zodiacData[selectedZodiac];
+                
+                // 문장 랜덤 선택
+                const opening = data.opening[Math.floor(Math.random() * data.opening.length)];
+                const body = data.body[Math.floor(Math.random() * data.body.length)];
+                const ending = data.ending[Math.floor(Math.random() * data.ending.length)];
+                
+                // 쇼츠 대본 생성
+                const script = `[0-3초 오프닝]
+${opening}
+
+[4-20초 핵심 메시지]
+${body}
+
+[21-30초 마무리]
+${ending}`;
+                
+                setResult({
+                    zodiac: selectedZodiac,
+                    data,
+                    script,
+                    thumbnail: `${data.emoji} ${selectedZodiac} ${data.energy}의 날`,
+                    hashtags: `#${selectedZodiac} #${selectedZodiac}운세 #돈운세 #재물운 #오늘의운세 #띠별운세`
+                });
+            };
+
+            const copyScript = () => {
+                navigator.clipboard.writeText(result.script);
+                alert('대본이 복사되었습니다!');
+            };
+
+            const copyHashtags = () => {
+                navigator.clipboard.writeText(result.hashtags);
+                alert('해시태그가 복사되었습니다!');
+            };
+
+            return (
+                <div className="container">
+                    <div className="header">
+                        <h1>💰 띠별 돈 운세 쇼츠</h1>
+                        <p>12띠 × 매일 다른 문장 = 무한 콘텐츠</p>
+                    </div>
+
+                    <div className="card">
+                        <div className="quick-select">
+                            <label style={{marginRight: '10px', fontWeight: 'bold'}}>빠른 입력:</label>
+                            <input 
+                                type="number" 
+                                placeholder="출생년도 (예: 1990)"
+                                value={birthYear}
+                                onChange={handleYearInput}
+                                maxLength="4"
+                            />
+                        </div>
+
+                        <h3 style={{marginBottom: '15px', textAlign: 'center'}}>또는 직접 선택</h3>
+                        
+                        <div className="zodiac-grid">
+                            {Object.entries(zodiacData).map(([name, data]) => (
+                                <button
+                                    key={name}
+                                    className={`zodiac-btn ${selectedZodiac === name ? 'selected' : ''}`}
+                                    onClick={() => setSelectedZodiac(name)}
+                                >
+                                    <span className="zodiac-emoji">{data.emoji}</span>
+                                    <div className="zodiac-name">{name}</div>
+                                    <div className="zodiac-years">
+                                        {data.years[data.years.length - 3]}년생 등
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+
+                        <button className="btn" onClick={generate} disabled={!selectedZodiac}>
+                            ✨ {selectedZodiac ? `${selectedZodiac} 운세 생성` : '띠를 선택해주세요'}
+                        </button>
+                    </div>
+
+                    {selectedZodiac && !result && (
+                        <div className="card stats-box">
+                            <strong>💡 마케팅 인사이트</strong><br/>
+                            "{selectedZodiac}" 검색량은 월 평균 수만 건!<br/>
+                            매일 12개 띠별 쇼츠 = 채널 성장 가속화 🚀
+                        </div>
+                    )}
+
+                    {result && (
+                        <div className="result-section">
+                            <div className="card">
+                                <div className="zodiac-info">
+                                    <h2>{result.data.emoji}</h2>
+                                    <h3>{result.zodiac}</h3>
+                                    <div style={{marginTop: '10px'}}>
+                                        <span className="energy-tag">{result.data.element}의 기운</span>
+                                        <span className="energy-tag">{result.data.energy}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="card">
+                                <h2>🎬 쇼츠 대본 (30초)</h2>
+                                <div className="script-box">{result.script}</div>
+                                <button className="copy-btn" onClick={copyScript}>
+                                    📋 대본 복사
+                                </button>
+                            </div>
+
+                            <div className="card">
+                                <h2>🖼️ 썸네일 문구</h2>
+                                <div className="thumbnail-preview">
+                                    {result.thumbnail}<br/>
+                                    <div style={{fontSize: '18px', marginTop: '10px', opacity: 0.9}}>
+                                        돈은 곧 돌아옵니다
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="card">
+                                <h2>🏷️ 해시태그</h2>
+                                <p style={{padding: '15px', background: '#f8f9fa', borderRadius: '8px', lineHeight: '1.8'}}>
+                                    {result.hashtags}
+                                </p>
+                                <button className="copy-btn" onClick={copyHashtags}>
+                                    📋 해시태그 복사
+                                </button>
+                            </div>
+
+                            <div className="card" style={{background: '#e7f3ff', border: '2px solid #2196F3'}}>
+                                <h3 style={{color: '#1565C0', marginBottom: '15px'}}>🎯 채널 전략 제안</h3>
+                                <p style={{lineHeight: '1.8', color: '#333'}}>
+                                    <strong>1. 매일 12개 쇼츠 업로드</strong><br/>
+                                    오전 7시~9시: 쥐·소·호랑이·토끼띠<br/>
+                                    낮 12시~2시: 용·뱀·말·양띠<br/>
+                                    저녁 6시~8시: 원숭이·닭·개·돼지띠<br/>
+                                    <br/>
+                                    <strong>2. 제목 최적화</strong><br/>
+                                    "🐲 용띠 10월 25일 돈운세 | 오늘은 확장의 날"<br/>
+                                    <br/>
+                                    <strong>3. 시리즈화</strong><br/>
+                                    주간 운세, 월간 재물운, 특별 이벤트(설날, 추석 등)
+                                </p>
+                            </div>
+
+                            <div className="card" style={{background: '#f8f9fa', border: '2px dashed #999'}}>
+                                <h3 style={{marginBottom: '10px'}}>💡 제작 가이드</h3>
+                                <p style={{lineHeight: '1.8', color: '#666'}}>
+                                    1. 대본 → 타입캐스트/VREW 등 TTS 툴<br/>
+                                    2. 썸네일 → 캔바 (템플릿: 운세/점성술)<br/>
+                                    3. 배경음악 → 유튜브 오디오 라이브러리 (신비/명상 계열)<br/>
+                                    4. 영상 길이 → 28~32초 (쇼츠 최적)<br/>
+                                    <br/>
+                                    <strong>※ 본 콘텐츠는 교양/오락 목적이며 투자 자문이 아닙니다.</strong>
+                                </p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>

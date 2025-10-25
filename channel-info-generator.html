@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📺 채널 정보 자동 생성기</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .output-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            font-size: 16px;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin: 10px 0;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .alert {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid #c3e6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📺 채널 정보 생성기</h1>
+            <p>복붙하기만 하면 끝!</p>
+        </div>
+
+        <div class="card">
+            <div class="section">
+                <h3>📌 제목 (채널명)</h3>
+                <div class="output-box" id="channelName">돈별운세</div>
+                <button class="btn btn-success" onclick="copy('channelName')">📋 복사</button>
+            </div>
+
+            <div class="section">
+                <h3>📖 설명 (채널 설명)</h3>
+                <div class="output-box" id="channelDesc">💰 매일 새벽 6시, 12띠 금전운
+
+60초 안에 오늘의 재물운을 한눈에!
+🐭🐮🐯🐰🐲🐍🐴🐑🐵🐓🐕🐷
+
+좋은 기운을 받아가세요 ✨</div>
+                <button class="btn btn-success" onclick="copy('channelDesc')">📋 복사</button>
+            </div>
+
+            <div class="section">
+                <h3>🔗 핸들 (채널 URL)</h3>
+                <div class="output-box" id="channelHandle">@돈별운세</div>
+                <button class="btn btn-success" onclick="copy('channelHandle')">📋 복사</button>
+            </div>
+
+            <div class="section">
+                <h3>📧 이메일 (비즈니스 문의)</h3>
+                <div class="output-box" id="channelEmail">moneyfortune2025@gmail.com</div>
+                <button class="btn btn-success" onclick="copy('channelEmail')">📋 복사</button>
+            </div>
+
+            <div class="section">
+                <h3>🏷️ 태그 (채널 키워드)</h3>
+                <div class="output-box" id="channelTags">띠별운세, 돈운세, 재물운, 오늘의운세, 12띠운세, 금전운, 재물운상승, 쥐띠운세, 소띠운세, 호랑이띠운세, 토끼띠운세, 용띠운세, 뱀띠운세, 말띠운세, 양띠운세, 원숭이띠운세, 닭띠운세, 개띠운세, 돼지띠운세</div>
+                <button class="btn btn-success" onclick="copy('channelTags')">📋 복사</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 style="margin-bottom: 20px;">📋 전체 복사</h2>
+            <button class="btn" onclick="copyAll()">⚡ 모든 정보 한번에 복사</button>
+            <div class="alert" id="alert" style="display: none; margin-top: 20px;">
+                ✅ 복사되었습니다!
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-bottom: 15px;">📝 사용 방법</h3>
+            <ol style="line-height: 2; padding-left: 20px;">
+                <li>유튜브 스튜디오 접속</li>
+                <li>왼쪽 메뉴 → <strong>설정</strong> 클릭</li>
+                <li><strong>채널</strong> → <strong>기본 정보</strong></li>
+                <li>위 내용을 차례로 복붙!</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        function copy(elementId) {
+            const text = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                showAlert();
+            });
+        }
+
+        function copyAll() {
+            const name = document.getElementById('channelName').textContent;
+            const desc = document.getElementById('channelDesc').textContent;
+            const handle = document.getElementById('channelHandle').textContent;
+            const email = document.getElementById('channelEmail').textContent;
+            const tags = document.getElementById('channelTags').textContent;
+
+            const allText = `채널명: ${name}
+
+채널 설명:
+${desc}
+
+핸들: ${handle}
+
+이메일: ${email}
+
+태그:
+${tags}`;
+
+            navigator.clipboard.writeText(allText).then(() => {
+                showAlert();
+            });
+        }
+
+        function showAlert() {
+            const alert = document.getElementById('alert');
+            alert.style.display = 'block';
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
